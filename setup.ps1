@@ -1,14 +1,47 @@
 Add-Type -Path ".\octopus.client.4.30.6\lib\net451\Octopus.Client.dll"
 
-#Connection variables
-$apikey = Get-Content api.key
-$OctopusURI = "http://localhost:8090/"
- 
-#Creating a connection
-$endpoint = new-object Octopus.Client.OctopusServerEndpoint $OctopusURI,$apikey
-$repository = new-object Octopus.Client.OctopusRepository $endpoint
- 
-#First example of Querying Octopus from Powershell
-#Getting all the users on this Octopus instance
-$repository.Users.FindAll()
-$repository.Projects.FindAll()
+function Get-OctoDeploy
+{
+    #Connection variables
+    $apikey = Get-Content api.key
+    $OctopusURI = "http://localhost:8090/"
+    
+    #Creating a connection
+    $endpoint = new-object Octopus.Client.OctopusServerEndpoint $OctopusURI,$apikey
+    $repository = new-object Octopus.Client.OctopusRepository $endpoint
+
+    return $repository
+}
+
+
+function Get-JsonFileProjectName 
+{
+    param(
+        [string]$filePath    
+    )
+
+    $jsonFile = Get-Content $filePath | Out-String | ConvertFrom-Json
+
+    return $jsonFile.Project.Name
+}
+
+
+function CheckIfProjectExist 
+{
+    param(
+        [string]$sourcePath    
+    )
+    
+    $sourceProjName = Get-JsonFileProjectName $sourcePath
+
+    Write-Host "Source: " $sourceProjName
+
+    $octoRepo = Get-OctoDeploy
+
+    $octoRepo.Projects.Get($sourceProjName)
+
+    if ($octoRepo -ne $null) {
+        Write-Host "The Project Exist"
+    }
+}
+
