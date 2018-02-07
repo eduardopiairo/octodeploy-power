@@ -2,9 +2,11 @@ Add-Type -Path ".\octopus.client.4.30.6\lib\net451\Octopus.Client.dll"
 
 function Get-OctoDeploy
 {
+    $octoConfig = Get-Content ".\octo.config.json" | Out-String | ConvertFrom-Json
+
     #Connection variables
-    $apikey = Get-Content api.key
-    $OctopusURI = "http://localhost:8090/"
+    $apikey = $octoConfig.OctoServerApiKey
+    $OctopusURI = $octoConfig.OctoServerUri
     
     #Creating a connection
     $endpoint = new-object Octopus.Client.OctopusServerEndpoint $OctopusURI,$apikey
